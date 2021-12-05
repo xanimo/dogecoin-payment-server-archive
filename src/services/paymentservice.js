@@ -4,7 +4,12 @@ const { Psbt, script, payments } = require('bitcoinjs-lib');
 const { Validator } = require("../validation");
 
 /** Helper lambda to check public key hex in scripts */
-const checkKeyLength = (key) => Buffer.from(key, "hex").length === 33;
+const checkKey = (key) => {
+  let flag = false, k = Buffer.from(key, "hex");
+  flag = k.length === 33
+  flag = script.isCanonicalPubKey(k)
+  return flag
+};
 
 /** Array of stack element check lambdas,
  *  to make sure we got the redeemscript we expected.
@@ -12,21 +17,20 @@ const checkKeyLength = (key) => Buffer.from(key, "hex").length === 33;
 //TODO: THIS IS UGLY! We may be able to use some internal functions of
 //      BitcoinJS.script instead...
 const RS_STRUCTURE = [
-  op => op === "OP_IF",
-  num => parseInt(num, 10) > 0,
-  op => op === "OP_CHECKLOCKTIMEVERIFY",
-  op => op === "OP_DROP",
-  checkKeyLength,
-  op => op === "OP_CHECKSIGVERIFY",
-  op => op === "OP_ELSE",
-  op => op === "OP_2",
-  op => op === "OP_ENDIF",
-  checkKeyLength,
-  checkKeyLength,
-  op => op === "OP_2",
-  op => op === "OP_CHECKMULTISIG"
+  op => op === 99,
+  num => parseInt(num.toString('hex'), 10) > 0,
+  op => op === 177,
+  op => op === 117,
+  checkKey,
+  op => op === 173,
+  op => op === 103,
+  op => op === 82,
+  op => op === 104,
+  checkKey,
+  checkKey,
+  op => op === 82,
+  op => op === 174
 ];
-
 /** Service that performs all payment related work
  *
  *  Note: this is meant to run as a singleton inside the controller
@@ -62,19 +66,18 @@ class PaymentService {
     }
 
     // parse the redeemscript
-    let rsASM;
+    let rsOPS;
     try {
-      rsASM = script.toASM(psbt.data.inputs[0].redeemScript).split(" ");
+      rsOPS = script.decompile(psbt.data.inputs[0].redeemScript);
     } catch (e) {
       validator.caught(e);
       return validator.result;
     }
 
-    // strict redeemscript syntax check to our format
     RS_STRUCTURE.forEach((chk, i) => {
-      validator.test(rsASM[i], chk, "Malformed redeemscript at position " + i);
+      validator.test(rsOPS[i], chk, "Malformed redeemscript at position " + i);
     });
-
+    
     // if there are syntax errors in the script, return here, because there
     // is no reason to continue (p2sh will fail, semantic validation will fail).
     if (!validator.result.isOk())
@@ -101,23 +104,20 @@ class PaymentService {
     // check expiry
     //TODO: make this relative to the current block...
     //      ... this will probably make this function async
-    validator.test(rsASM[1], lt => parseInt(lt, 10) > this.minChannelExpiry,
+    validator.test(rsOPS[1], lt => parseInt(lt.toString('hex'), 10) > this.minChannelExpiry,
                     "locktime needs to be greater than " + this.minChannelExpiry);
 
     // check the keys
     const keys = {
-      us: publicKey,
-      them: rsASM[4],
-      both: rsASM.slice(9,11)
+      us: Buffer.from(publicKey, 'hex'),
+      them: rsOPS[4],
+      both: rsOPS.slice(9,11)
     }
-
-    console.log(keys.both)
-
     validator.test(keys, keys => keys.them != keys.us,
                     "our key must not be part of the CLTV clause");
-    validator.test(keys, keys => keys.both.indexOf(keys.them) !== -1,
+    validator.test(keys, keys => Buffer.compare(keys.them, keys.both[0]) == 0,
                     "their key must be part of the multisig clause");
-    validator.test(keys, keys => keys.both.indexOf(keys.us) !== -1,
+    validator.test(keys, keys => Buffer.compare(keys.us, keys.both[1]) == 0,
                     "our key must be part of the multisig clause");
 
     //TODO: check p2sh to be funded with the txHex

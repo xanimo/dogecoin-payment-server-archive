@@ -15,6 +15,6 @@ RUN ln -s /usr/src/dogecoin-1.14.5/bin/dogecoin-cli /usr/bin/dogecoin-cli
 ADD dogecoin.conf /root/.dogecoin/dogecoin.conf
 
 
-EXPOSE 22555 22556 44555 44556 18444 18443
+EXPOSE 22555 22556 44555 44556 18443
 
 CMD ["dogecoind", "-printtoconsole"]
