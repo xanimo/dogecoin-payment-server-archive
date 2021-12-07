@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { Psbt, script, payments } = require('bitcoinjs-lib');
+const { Psbt, script, payments, Transaction } = require('bitcoinjs-lib');
 
 const { Validator } = require("../validation");
 
@@ -109,10 +109,14 @@ class PaymentService {
 
     // check the keys
     const keys = {
-      us: Buffer.from(publicKey, 'hex'),
+      us: publicKey,
       them: rsOPS[4],
       both: rsOPS.slice(9,11)
     }
+    console.log('keys.them', keys.them)
+    console.log('keys.both[0]', keys.both[0])
+    console.log('keys.us', keys.us)
+    console.log('keys.both[1]', keys.both[1])
     validator.test(keys, keys => keys.them != keys.us,
                     "our key must not be part of the CLTV clause");
     validator.test(keys, keys => Buffer.compare(keys.them, keys.both[0]) == 0,
@@ -121,7 +125,14 @@ class PaymentService {
                     "our key must be part of the multisig clause");
 
     //TODO: check p2sh to be funded with the txHex
-
+    console.log(p2sh)
+    console.log(p2sh.output.toString('hex'))
+    console.log(psbt.data.inputs[0])
+    // console.log(Psbt.fromHex(psbt))
+    // console.log(Transaction.fromHex(psbt.data.inputs[0]))
+    console.log(Transaction.fromHex(psbt.data.inputs[0].nonWitnessUtxo.toString('hex')).outs[0].value)
+    this.checkFunding(1, psbt, psbt, psbt, p2sh)
+    this.checkSignature(psbt)
     return validator.result;
   }
 

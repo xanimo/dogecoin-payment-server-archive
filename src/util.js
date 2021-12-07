@@ -43,7 +43,6 @@ async function jsonRPC (command, params) {
 
 function initKeyPair(key) {
   const keyPair =  bitcoinjs.ECPair.fromPrivateKey(new Buffer.from(key, 'hex'), {
-    compressed: true,
     network: networks.regtest
   })
   return keyPair
