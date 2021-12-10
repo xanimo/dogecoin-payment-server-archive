@@ -1,35 +1,41 @@
+/* eslint-disable no-shadow */
+/* eslint-disable class-methods-use-this */
+/* eslint-disable eqeqeq */
 const assert = require('assert');
-const { Psbt, script, payments, Transaction } = require('bitcoinjs-lib');
+const {
+  Psbt, script, payments, Transaction
+} = require('bitcoinjs-lib');
 
-const { Validator } = require("../validation");
+const { Validator } = require('../validation');
 
 /** Helper lambda to check public key hex in scripts */
 const checkKey = (key) => {
-  let flag = false, k = Buffer.from(key, "hex");
-  flag = k.length === 33
-  flag = script.isCanonicalPubKey(k)
-  return flag
+  let flag = false; const
+    k = Buffer.from(key, 'hex');
+  flag = k.length === 33;
+  flag = script.isCanonicalPubKey(k);
+  return flag;
 };
 
 /** Array of stack element check lambdas,
  *  to make sure we got the redeemscript we expected.
  */
-//TODO: THIS IS UGLY! We may be able to use some internal functions of
+// TODO: THIS IS UGLY! We may be able to use some internal functions of
 //      BitcoinJS.script instead...
 const RS_STRUCTURE = [
-  op => op === 99,
-  num => parseInt(num.toString('hex'), 10) > 0,
-  op => op === 177,
-  op => op === 117,
+  (op) => op === 99,
+  (num) => parseInt(num.toString('hex'), 10) > 0,
+  (op) => op === 177,
+  (op) => op === 117,
   checkKey,
-  op => op === 173,
-  op => op === 103,
-  op => op === 82,
-  op => op === 104,
+  (op) => op === 173,
+  (op) => op === 103,
+  (op) => op === 82,
+  (op) => op === 104,
   checkKey,
   checkKey,
-  op => op === 82,
-  op => op === 174
+  (op) => op === 82,
+  (op) => op === 174
 ];
 /** Service that performs all payment related work
  *
@@ -38,10 +44,6 @@ const RS_STRUCTURE = [
  *        instead, pass those to the methods.
  */
 class PaymentService {
-
-  network;
-  minChannelExpiry;
-
   constructor(network, minChannelExpiry) {
     this.network = network;
     this.minChannelExpiry = minChannelExpiry;
@@ -57,9 +59,9 @@ class PaymentService {
     let psbt;
     try {
       psbt = Psbt.fromHex(psbtHex);
-      assert(typeof psbt.data === "object");
+      assert(typeof psbt.data === 'object');
       assert(Array.isArray(psbt.data.inputs));
-      assert(psbt.data.inputs.length > 0)
+      assert(psbt.data.inputs.length > 0);
     } catch (e) {
       validator.caught(e);
       return validator.result;
@@ -75,20 +77,19 @@ class PaymentService {
     }
 
     RS_STRUCTURE.forEach((chk, i) => {
-      validator.test(rsOPS[i], chk, "Malformed redeemscript at position " + i);
+      validator.test(rsOPS[i], chk, `Malformed redeemscript at position ${i}`);
     });
-    
+
     // if there are syntax errors in the script, return here, because there
     // is no reason to continue (p2sh will fail, semantic validation will fail).
-    if (!validator.result.isOk())
-      return validator.result;
+    if (!validator.result.isOk()) { return validator.result; }
 
     // check p2sh address
     let p2sh;
     try {
       p2sh = payments.p2sh({
-          redeem: { output: psbt.data.inputs[0].redeemScript },
-          network: this.network
+        redeem: { output: psbt.data.inputs[0].redeemScript },
+        network: this.network
       });
     } catch (e) {
       validator.caught(e);
@@ -102,61 +103,64 @@ class PaymentService {
     ///     -------------------     ///
 
     // check expiry
-    //TODO: make this relative to the current block...
+    // TODO: make this relative to the current block...
     //      ... this will probably make this function async
-    validator.test(rsOPS[1], lt => parseInt(lt.toString('hex'), 10) > this.minChannelExpiry,
-                    "locktime needs to be greater than " + this.minChannelExpiry);
+    validator.test(rsOPS[1], (lt) => parseInt(lt.toString('hex'), 10) > this.minChannelExpiry,
+      `locktime needs to be greater than ${this.minChannelExpiry}`);
 
     // check the keys
     const keys = {
       us: publicKey,
       them: rsOPS[4],
-      both: rsOPS.slice(9,11)
-    }
-    console.log('keys.them', keys.them)
-    console.log('keys.both[0]', keys.both[0])
-    console.log('keys.us', keys.us)
-    console.log('keys.both[1]', keys.both[1])
-    validator.test(keys, keys => keys.them != keys.us,
-                    "our key must not be part of the CLTV clause");
-    validator.test(keys, keys => Buffer.compare(keys.them, keys.both[0]) == 0,
-                    "their key must be part of the multisig clause");
-    validator.test(keys, keys => Buffer.compare(keys.us, keys.both[1]) == 0,
-                    "our key must be part of the multisig clause");
+      both: rsOPS.slice(9, 11)
+    };
+    validator.test(keys, (keys) => keys.them != keys.us,
+      'our key must not be part of the CLTV clause');
+    validator.test(keys, (keys) => Buffer.compare(keys.them, keys.both[0]) == 0,
+      'their key must be part of the multisig clause');
+    validator.test(keys, (keys) => Buffer.compare(keys.us, keys.both[1]) == 0,
+      'our key must be part of the multisig clause');
+    // TODO: check p2sh to be funded with the txHex
+    // eslint-disable-next-line max-len
+    validator.test(p2sh, (p2sh) => Buffer.compare(p2sh.redeem.output, psbt.data.inputs[0].redeemScript) == 0,
+      'p2sh redeem script must match psbt input redeem script');
+    validator.test(psbt, (psbt) => Transaction.fromHex(psbt.data.inputs[0].nonWitnessUtxo.toString('hex')).outs[0].value > 0,
+      'transaction amount must be greater than 0');
 
-    //TODO: check p2sh to be funded with the txHex
-    console.log(p2sh)
-    console.log(p2sh.output.toString('hex'))
-    console.log(psbt.data.inputs[0])
-    // console.log(Psbt.fromHex(psbt))
-    // console.log(Transaction.fromHex(psbt.data.inputs[0]))
-    console.log(Transaction.fromHex(psbt.data.inputs[0].nonWitnessUtxo.toString('hex')).outs[0].value)
-    this.checkFunding(1, psbt, psbt, psbt, p2sh)
-    this.checkSignature(psbt)
     return validator.result;
   }
 
   /** Check the funding of a tx through our blocksource */
   async checkFunding(minConfirms, expiresAt, txid, txHex, p2sh) {
     const validator = new Validator();
-
-    //TODO: confirm block height on the blockchain
-    //TODO: check confirmations
-    //TODO: check not expired
+    console.log(expiresAt);
+    console.log(txid);
+    console.log(txHex);
+    console.log(p2sh);
+    // TODO: confirm block height on the blockchain
+    validator.test(minConfirms, minConfirms >= 1);
+    // TODO: check confirmations
+    // TODO: check not expired
 
     return validator.result;
   }
 
   /** check the counterparty signature on a psbt */
-  checkSignature(psbt) {
+  checkSignature(psbtIn) {
     const validator = new Validator();
-
-    //TODO: extract counterparty pubkey from psbt redeemscript
-    //TODO: for each input, check that the signature for the pubkey matches
-
+    // //TODO: extract counterparty pubkey from psbt redeemscript
+    const psbt = Psbt.fromHex(psbtIn.data.toHex());
+    // //TODO: for each input, check that the signature for the pubkey matches
+    psbt.data.inputs.map((v, k) => {
+      if (v) {
+        const rs = script.decompile(v.redeemScript);
+        const customerKey = Buffer.compare(rs[4], rs[9]) ? '' : rs[4];
+        validator.test(psbt, psbt.validateSignaturesOfInput(k, customerKey));
+      }
+      return v;
+    });
     return validator.result;
   }
-
 }
 
 module.exports = { PaymentService };
