@@ -24,7 +24,7 @@ const checkKey = (key) => {
 //      BitcoinJS.script instead...
 const RS_STRUCTURE = [
   (op) => op === 99,
-  (num) => parseInt(num.toString('hex'), 10) > 0,
+  (num) => parseInt(num.toString('hex'), 10),
   (op) => op === 177,
   (op) => op === 117,
   checkKey,
