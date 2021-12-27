@@ -111,8 +111,6 @@ class PaymentService {
       both: rsASM.slice(9,11)
     }
 
-    console.log(keys.both)
-
     validator.test(keys, keys => keys.them != keys.us,
                     "our key must not be part of the CLTV clause");
     validator.test(keys, keys => keys.both.indexOf(keys.them) !== -1,

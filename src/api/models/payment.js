@@ -1,45 +1,36 @@
-const { Validator } = require('../../validation');
+const { MissingFieldError } = require('./error')
 
-const PaymentMessageType = Object.create(null);
-PaymentMessageType.ANNOUNCE = "announce";
-PaymentMessageType.PAYMENT = "payment";
-
-Object.defineProperty(PaymentMessageType, "values", {
-  get: () => Object.values(PaymentMessageType),
-  enumerable: false
-});
-
+/*
+  Message received when we want to create a micro payment buying an item identified by `ref`
+*/
 class PaymentMessage {
-  type;
-  ref;
-  psbt;
 
-  constructor(type, ref, psbt) {
-    this.type = type;
-    this.ref = ref;
-    this.psbt = psbt;
+  constructor(transaction, signature, ref) {
+    this.transaction = transaction
+    this.signature = signature
+    this.ref = ref
   }
 
-  validate() { // Returns ValidationResult
-    const validator = new Validator();
-    try {
-      validator.test(this.type, (d) => typeof d === "string",
-                     "type needs to be a string");
-      validator.test(this.type, (d) => PaymentMessageType.values.indexOf(d) !== -1,
-                     "type needs to be one of " + PaymentMessageType.values.join(","));
-      validator.test(this.psbt, (d) => typeof d === "string",
-                     "psbtHex needs to be a string");
-      validator.test(this.psbt, (d) => Buffer.from(d, "hex").length == d.length / 2,
-                     "psbt needs to be a hexadecimal string");
-    } catch (e) {
-      validator.caught(e);
+  static fromObject(args) {
+    if (!args.hasOwnProperty('transaction')) {
+      throw new MissingFieldError('transaction')
     }
 
-    return validator.result;
+    if (!args.hasOwnProperty('signature')) {
+      throw new MissingFieldError('signature')
+    }
+  
+    if (!args.hasOwnProperty('ref')) {
+      throw new MissingFieldError('ref')
+    }
+
+    return new this(args.transaction, args.signature, args.ref)
+  }
+
+  validate() {
+    throw new Error('Not implemented')
   }
 
 }
 
-PaymentMessage.fromObject = (obj) => new PaymentMessage(obj.type, obj.ref, obj.psbt);
-
-module.exports = { PaymentMessage, PaymentMessageType };
+module.exports = PaymentMessage;

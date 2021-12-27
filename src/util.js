@@ -25,6 +25,11 @@ async function checkDogecoinNode() {
   }
 }
 
+async function importaddress(redeemScript) {
+  // IDEA: register under label that correspond to your service
+  return await jsonRPC('importaddress', [redeemScript.toString('hex'), 'minecraft', true, true])
+}
+
 async function jsonRPC (command, params) {
   const token = Buffer.from(`${process.env.RPC_USER}:${process.env.RPC_PASSWORD}`, 'utf8').toString('base64')
 
@@ -53,6 +58,7 @@ function initKeyPair(key) {
 module.exports = {
     checkDogecoinNode,
     checkConfig,
+    importaddress,
     jsonRPC,
     initKeyPair
 }

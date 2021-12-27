@@ -12,12 +12,8 @@ router.post('/', (req, res) => {
   const keyPair = initKeyPair(process.env.PRIVATE_KEY);
   const pubkey = keyPair.publicKey.toString('hex');
 
-  // check syntax of payment message we received
   const paymsg = PaymentMessage.fromObject(req.body);
-  const syntaxVdn = paymsg.validate();
-  if (!syntaxVdn.isOk()) {
-    return res.status(400).send(syntaxVdn.toResponseObject())
-  }
+
 
   // currently we only implement announcements
   if (paymsg.type !== PaymentMessageType.ANNOUNCE) {
