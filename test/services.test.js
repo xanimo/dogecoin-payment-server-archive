@@ -2,7 +2,7 @@ const assert = require('assert')
 
 const { ECPair } = require('bitcoinjs-lib')
 const networks = require('../src/networks')
-const AnnounceService = require('../src/services/announceservice')
+const AnnounceService = require('../src/api/announce/service')
 
 const { constructRS, createFundingTx, generatePsbt } = require('./helpers');
 

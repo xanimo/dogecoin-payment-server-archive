@@ -1,4 +1,4 @@
-const { MissingFieldError } = require('./error')
+const { MissingFieldError } = require('../error')
 
 class AnnounceMessage {
   constructor(redeemScript) {

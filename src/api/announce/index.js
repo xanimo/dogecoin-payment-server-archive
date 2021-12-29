@@ -1,9 +1,9 @@
 const express = require('express')
 
-const AnnounceMessage = require('./models/announce')
-const AnnounceService = require('../services/announceservice')
-const { initKeyPair, importaddress } = require('../util')
-const networks = require('../networks');
+const AnnounceMessage = require('./message')
+const AnnounceService = require('./service')
+const { initKeyPair, importaddress } = require('../../util')
+const networks = require('../../networks')
 
 
 const MIN_CHANNEL_EXPIRY = 0
