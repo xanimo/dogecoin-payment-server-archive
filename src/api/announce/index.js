@@ -5,7 +5,7 @@ const AnnounceService = require('./service')
 const { initKeyPair, importaddress } = require('../../util')
 const networks = require('../../networks')
 
-
+// TODO: find a more appropriate value
 const MIN_CHANNEL_EXPIRY = 0
 
 const router = express.Router();
@@ -20,7 +20,8 @@ router.post('/', (req, res) => {
     announceService.validate(pubkey, announcemsg.redeemScript)
 
     // Import the address to our dogecoin node
-    // It allows being notified when the tarnsaction has been included in a block
+    // It allows being notified when the transaction has been included in a block
+    // TODO: this should probably be part of the service
     importaddress(this.redeemScript)
         .then(function (res) {
             console.log(res)
