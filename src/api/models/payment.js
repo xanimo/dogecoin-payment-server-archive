@@ -27,10 +27,6 @@ class PaymentMessage {
     return new this(args.transaction, args.signature, args.ref)
   }
 
-  validate() {
-    throw new Error('Not implemented')
-  }
-
 }
 
-module.exports = PaymentMessage;
+module.exports = PaymentMessage

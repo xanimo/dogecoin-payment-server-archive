@@ -1,31 +1,19 @@
-const networks = require('../networks');
-const express = require('express');
-const { initKeyPair } = require('../util');
+const networks = require('../networks')
+const express = require('express')
 
-const { PaymentMessage, PaymentMessageType } = require('./models/payment');
-const { PaymentService } = require('../services/paymentservice');
+const PaymentMessage = require('./models/payment')
+const PaymentService = require('../services/paymentservice')
 
-const router = express.Router();
-const pmtService = new PaymentService(networks.regtest, 1199);
+const router = express.Router()
+const pmtService = new PaymentService(networks.regtest)
 
+// Should we include the ref in the url ?
+// (e.g payment/123/)
 router.post('/', (req, res) => {
-  const keyPair = initKeyPair(process.env.PRIVATE_KEY);
-  const pubkey = keyPair.publicKey.toString('hex');
+  const paymsg = PaymentMessage.fromObject(req.body)
+  pmtService.validate(paymsg)
 
-  const paymsg = PaymentMessage.fromObject(req.body);
-
-
-  // currently we only implement announcements
-  if (paymsg.type !== PaymentMessageType.ANNOUNCE) {
-    return res.status(402).send({
-      status: "error",
-      errors: ["not implemented:" + paymsg.type]
-    });
-  }
-
-  // handle announcement
-  const psbtVdn = pmtService.checkPSBT(pubkey, paymsg.psbt);
-  return res.status(psbtVdn.isOk() ? 200 : 400).send(psbtVdn.toResponseObject());
+  // If valid sign
 });
 
 module.exports = router;

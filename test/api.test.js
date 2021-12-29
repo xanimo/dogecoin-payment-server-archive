@@ -1,6 +1,5 @@
 const request = require('supertest');
 const app = require('../src/app');
-const bitcoinjs = require('bitcoinjs-lib')
 
 
 describe('GET /api/v1/pubkey/new', () => {
