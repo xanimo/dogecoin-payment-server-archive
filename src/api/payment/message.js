@@ -1,4 +1,4 @@
-const { MissingFieldError } = require('./error')
+const { MissingFieldError } = require('../error')
 
 /*
   Message received when we want to create a micro payment buying an item identified by `ref`
