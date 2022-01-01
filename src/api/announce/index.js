@@ -22,9 +22,9 @@ router.post('/', (req, res) => {
     // Import the address to our dogecoin node
     // It allows being notified when the transaction has been included in a block
     // TODO: this should probably be part of the service
-    importaddress(this.redeemScript)
+    importaddress(announcemsg.redeemScript)
         .then(function (res) {
-            console.log(res)
+            console.log(res.data)
         })
 
     // TODO: save to database

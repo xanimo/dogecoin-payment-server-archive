@@ -1,6 +1,6 @@
-const axios = require('axios');
-const bitcoinjs = require('bitcoinjs-lib');
-const networks = require('./networks');
+const axios = require('axios')
+const bitcoinjs = require('bitcoinjs-lib')
+const networks = require('./networks')
 
 function checkConfig() {
   const config = [
