@@ -15,6 +15,8 @@ router.post('/', (req, res) => {
   // For now always ok
   paymentService.checkFunding()
   paymentService.checkSignature()
-});
+
+  return res.send()
+})
 
 module.exports = router
