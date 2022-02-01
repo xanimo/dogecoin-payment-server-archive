@@ -1,22 +1,45 @@
-const { payments, Psbt, script, Transaction } = require('bitcoinjs-lib');
+const {
+  payments, Psbt, script, Transaction
+} = require('bitcoinjs-lib');
 const bip65 = require('bip65');
 
-const encodeLocktime = (n) => {
-    n.length == 0 ? n = 0 : n = 300;
-    return Buffer.from(bip65.encode({ blocks: n }).toString(16), 'hex').reverse().toString('hex')
+const jsonReader = (json) => require(`./fixtures/${json}`);
+
+// eslint-disable-next-line no-unused-vars
+const fromHex = (x) => {
+  const hex = x.toString();
+  let str = '';
+  for (let n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+  }
+  return str;
+};
+
+function getBinarySize(string) {
+  return Buffer.byteLength(string, 'utf8');
 }
+
+const decodeTransaction = (tx) => {
+  console.log(getBinarySize(tx));
+  console.log(Transaction.fromHex(tx.slice(16)));
+  return tx;
+};
+
+const encodeLocktime = (n) => {
+  n = n ? 300 : 0;
+  return Buffer.from(bip65.encode({ blocks: n }).toString(16), 'hex').reverse().toString('hex');
+};
 
 const constructRS = (customer, merchant, locktime) => {
-    encodedLocktime = encodeLocktime(locktime);
+  const encodedLocktime = encodeLocktime(locktime);
 
-    return script.fromASM("OP_IF " + encodedLocktime + "00" + " OP_CHECKLOCKTIMEVERIFY OP_DROP " +
-    customer.publicKey.toString('hex') + " OP_CHECKSIGVERIFY OP_ELSE OP_2 OP_ENDIF " +
-    customer.publicKey.toString('hex') + " " + merchant.publicKey.toString('hex') + " OP_2 OP_CHECKMULTISIG");
-}
+  return script.fromASM(`OP_IF ${encodedLocktime}00 OP_CHECKLOCKTIMEVERIFY OP_DROP ${
+    customer.publicKey.toString('hex')} OP_CHECKSIGVERIFY OP_ELSE OP_2 OP_ENDIF ${
+    customer.publicKey.toString('hex')} ${merchant.publicKey.toString('hex')} OP_2 OP_CHECKMULTISIG`);
+};
 
 // simply mine into the p2sh with a coinbase tx
 function createFundingTx(targetRedeemscript, amount) {
-
   const tx = new Transaction();
 
   // coinbase input
@@ -29,23 +52,23 @@ function createFundingTx(targetRedeemscript, amount) {
   tx.addOutput(target.output, amount);
 
   return tx;
-
 }
 
-function generatePsbt (fundingTx, redeemScript) {
-    const psbt = new Psbt()
+function generatePsbt(customerKey, fundingTx, redeemScript) {
+  const psbt = new Psbt();
 
-    psbt.addInput({
-        hash: fundingTx.getHash(),
-        index: 0,
-        nonWitnessUtxo: fundingTx.toBuffer(),
-        redeemScript: redeemScript
-    });
-
-    return psbt;
+  psbt.addInput({
+    hash: fundingTx.getHash(),
+    index: 0,
+    nonWitnessUtxo: fundingTx.toBuffer(),
+    redeemScript,
+  });
+  return psbt;
 }
 
 module.exports = {
+  jsonReader,
+  decodeTransaction,
   constructRS,
   createFundingTx,
   encodeLocktime,

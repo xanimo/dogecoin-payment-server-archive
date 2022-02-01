@@ -1,0 +1,31 @@
+version: "3"
+services:
+  dogecoind:
+    container_name: dogecoind_regtest_bob
+    image: dogecoind_bob:latest
+    # specify additional command line arguments here
+    command: dogecoind, dogecoin-tx, test_dogecoin
+    healthcheck:
+      test: ["CMD", "/entrypoint.sh", "dogecoin-cli", "getpeerinfo"]
+    ports:
+      # change to 44556 if running testnet
+      - "18880:18880"
+  dogecoind:
+    image: dogecoind_bob:latest
+    volumes:
+      - dogecoin-data:/data
+    networks:
+      - dogecoin
+  dogecoin-cli:
+    image: dogecoind_bob:latest
+    entrypoint: ["/entrypoint.sh", "dogecoin-cli"]
+    command: ""
+    depends_on:
+      - dogecoind
+    network_mode: service:dogecoind
+
+networks:
+  dogecoin:
+
+volumes:
+  dogecoin-data:

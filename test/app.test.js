@@ -1,11 +1,11 @@
-const request = require('supertest');
+// const request = require('supertest');
 
-const app = require('../src/app');
+// const app = require('../src/app');
 
-describe('app', () => {
+// describe('app', () => {
 
-});
+// });
 
-describe('GET /', () => {
+// describe('GET /', () => {
 
-});
+// });
