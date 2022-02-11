@@ -1,5 +1,5 @@
 const express = require('express')
-const helmet = require('helmet')
+// const helmet = require('helmet')
 
 require('dotenv').config()
 
@@ -8,7 +8,7 @@ const api = require('./api')
 
 const app = express()
 
-app.use(helmet())
+// app.use(helmet())
 app.use(express.json())
 
 app.use('/api/v1', api)
