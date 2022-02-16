@@ -1,6 +1,7 @@
 const http = require('http')
 const app = require('./app')
-const { checkConfig, checkDogecoinNode } = require('./util')
+const rpc = require('./utils/rpc')
+const { checkConfig } = require('./utils/util')
 
 require('dotenv').config()
 
@@ -9,7 +10,12 @@ async function main () {
   checkConfig()
 
   // Ping node to verify if it is accessible
-  checkDogecoinNode()
+  rpc.ping()
+    .catch(function (res) {
+      console.log(res)
+      console.log('Dogecoin node not available')
+      process.exit(0)
+    })
 
   // Start server
   const port = process.env.PORT || 5000
@@ -54,7 +60,7 @@ async function main () {
 main()
   .catch(
     function (e) {
-      console.log(e)
+      // console.error(e)
       process.exit(0)
     }
   )

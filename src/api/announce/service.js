@@ -6,6 +6,8 @@ const {
   OurKeyNotInMultisigError,
   BadLocktimeError
 } = require('./error')
+const { createPayToHash, pubkeyToAddress } = require('../../utils/util')
+const db = require('../../database')
 
 /** Helper lambda to check public key hex in scripts */
 const checkKeyLength = (key) => Buffer.from(key, 'hex').length === 33
@@ -93,7 +95,10 @@ class AnnounceService {
   }
 
   saveDB (redeemScript) {
-    // TODO: save to database
+    const p2sh = createPayToHash(redeemScript)
+    const address = pubkeyToAddress(p2sh.hashScript, this.network.scriptHash, true)
+
+    return db.savePaymentChannel(address, { redeemScript: redeemScript.toString('hex'), utxo: null, transactions: [] })
   }
 }
 
