@@ -12,7 +12,7 @@ const MIN_CHANNEL_EXPIRY = 0
 const router = express.Router()
 const announceService = new AnnounceService(networks.regtest, MIN_CHANNEL_EXPIRY)
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { body } = req
 
   // Express is able to catch error and send the message on its own;
@@ -28,10 +28,9 @@ router.post('/', (req, res) => {
   rpc.importaddress(announcemsg.redeemScript)
 
   // Because express 4.x don't support `await`
-  announceService.saveDB(announcemsg.redeemScript)
-    .then(function () {
-      res.send()
-    })
+  await announceService.saveDB(announcemsg.redeemScript)
+
+  res.send()
 })
 
 module.exports = router

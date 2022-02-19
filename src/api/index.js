@@ -16,12 +16,10 @@ router.use('/pubkey', pubkey)
 
 // Error handler
 router.use(function (err, req, res, next) {
-  // Should be 200 unless err.statusCode or err.status
-  // see http://expressjs.com/en/guide/error-handling.html
-  res.status(err.status)
+  res.status(err.status || 500)
   res.json({
     message: err.message,
-    code: err.code || null
+    id: err.name || null
   })
 })
 

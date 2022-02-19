@@ -42,6 +42,9 @@ class Database {
 
   getPaymentChannel (address) {
     return this.paymentchannelDB.get(address)
+      .then(function (value) {
+        return JSON.parse(value)
+      })
       .catch(function (err) {
         if (err) {
           if (err.notFound) {
