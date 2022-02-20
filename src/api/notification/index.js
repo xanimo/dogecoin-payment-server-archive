@@ -1,4 +1,7 @@
 const express = require('express')
+
+const logger = require('#logging')
+
 const rpc = require('../../utils/rpc')
 const db = require('../../database')
 
@@ -10,7 +13,7 @@ const SCRIPTHASH_TYPE = 'scripthash'
 router.post('/', function (req, res) {
   const { txid } = req.body
 
-  console.log('Notification called for :', txid)
+  logger.info('Notification called for : %s', txid)
 
   rpc.getrawtransaction(txid)
     .then(function (result) {
@@ -22,7 +25,7 @@ router.post('/', function (req, res) {
           db.getPaymentChannel(addresses[0])
             .then(function (result) {
               if (result) {
-                console.log('It is our input tx! Save it to db')
+                logger.info('It is our input tx! Save it to db')
                 db.updatePaymentChannelUTXO(addresses[0], txid, txout)
               }
             })

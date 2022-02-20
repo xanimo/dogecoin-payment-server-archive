@@ -7,7 +7,6 @@ function pubkeyToPubkeyHash (pubkey) {
 
 function pubkeyToAddress (pubkey, networkByte, hash = false) {
   let pubKeyHash = pubkey
-  console.log(pubkey)
 
   if (!hash) {
     pubKeyHash = pubkeyToPubkeyHash(pubkey)

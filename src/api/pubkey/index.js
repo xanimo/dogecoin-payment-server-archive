@@ -1,4 +1,6 @@
 const express = require('express')
+
+const logger = require('#logging')
 const { initKeyPair } = require('../../utils/util')
 
 const router = express.Router()
@@ -7,7 +9,7 @@ const router = express.Router()
 router.get('/new', (req, res) => {
   const keyPair = initKeyPair(process.env.PRIVATE_KEY)
 
-  console.log('pubkey/new called')
+  logger.info('pubkey/new called')
 
   res.send({
     pubkey: keyPair.publicKey.toString('hex')
