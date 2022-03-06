@@ -6,10 +6,11 @@ const { decodeTx, prepareTransactionToSign } = require('../../utils/tx')
 const { createPayToHash, pubkeyToAddress } = require('../../utils/address')
 const { doubleHash } = require('../../utils/hash')
 const db = require('../../database')
-const CLTVScript = require('../../cltv')
+const CLTVScript = require('../../paymentchannel/cltv')
 const { InvalidSignatureError } = require('./error')
 
 const PaymentMessage = require('./message')
+const logger = require('../../logging')
 
 const router = express.Router()
 // const paymentService = new PaymentService(networks.regtest)
@@ -17,6 +18,7 @@ const router = express.Router()
 // Should we include the ref in the url ?
 // (e.g payment/123/)
 router.post('/', async (req, res) => {
+  logger.info('/payment called')
   const paymentMessage = PaymentMessage.fromObject(req.body)
 
   /*

@@ -4,6 +4,7 @@ const logger = require('#logging')
 
 const rpc = require('../../utils/rpc')
 const db = require('../../database')
+const PaymentChannelState = require('../../paymentchannel/state')
 
 const router = express.Router()
 
@@ -26,7 +27,7 @@ router.post('/', function (req, res) {
             .then(function (result) {
               if (result) {
                 logger.info('It is our input tx! Save it to db')
-                db.updatePaymentChannelUTXO(addresses[0], txid, txout)
+                db.updatePaymentChannelUTXO(addresses[0], txid, txout, PaymentChannelState.Opened)
               }
             })
         }
