@@ -26,7 +26,6 @@ class InvalidSignatureError extends Error {
   }
 }
 
-
 module.exports = {
   MissingFieldError,
   NotImplementedError,
