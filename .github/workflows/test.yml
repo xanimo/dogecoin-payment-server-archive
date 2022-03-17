@@ -14,7 +14,7 @@ jobs:
       RPC_PASSWORD: amiens
       RPC_URL: 127.0.0.1
       RPC_PORT: 44555
-      PRIVATE_KEY: ${{ secret.PRIVATE_KEY }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
     steps:
     - name: Checkout Repo 
       uses: actions/checkout@v2
