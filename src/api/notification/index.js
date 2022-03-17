@@ -2,6 +2,7 @@ const express = require('express')
 
 const logger = require('#logging')
 
+const { decodeTx } = require('../../utils/tx')
 const rpc = require('../../utils/rpc')
 const db = require('../../database')
 const PaymentChannelState = require('../../paymentchannel/state')
@@ -26,7 +27,16 @@ router.post('/', function (req, res) {
           db.getPaymentChannel(addresses[0])
             .then(function (result) {
               if (result) {
-                logger.info('It is our input tx! Save it to db')
+                logger.info('Found payment channel in database')
+
+                if (result.transactions.length > 0) {
+                  const tx = decodeTx(result.transactions[0])
+
+                  if (txid !== tx.id.toString('hex')) {
+                    logger.warn('txid is different from the payment channel return tx saved')
+                  }
+                }
+
                 db.updatePaymentChannelUTXO(addresses[0], txid, txout, PaymentChannelState.Opened)
               }
             })

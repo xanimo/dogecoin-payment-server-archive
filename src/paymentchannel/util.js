@@ -1,4 +1,5 @@
-const { sign, decodeTx, prepareTransactionToSign, encodeRawTransaction } = require('../utils/tx')
+const { decodeTx, prepareTransactionToSign, encodeRawTransaction } = require('../utils/tx')
+const { sign, verify } = require('../utils/crypto')
 const { doubleHash } = require('../utils/hash')
 const CompactSize = require('../utils/compactSize')
 
@@ -42,4 +43,19 @@ function signPaymentChannelTx (rawtx, payerSignature, redeemScript, privkey) {
   return tx
 }
 
-module.exports = { signPaymentChannelTx }
+function verifyPaymentChannelTx (rawtx, signature, redeemScript, pubkey) {
+  const tx = decodeTx(rawtx)
+
+  // Probably not redeem script but p2sh
+  tx.txIns[0].signature = redeemScript
+
+  tx.hashCodeType = 1
+  const rawTx = prepareTransactionToSign(tx, 0)
+  const message = doubleHash(rawTx)
+
+  const ok = verify(signature, pubkey, message)
+
+  return ok
+}
+
+module.exports = { signPaymentChannelTx, verifyPaymentChannelTx }

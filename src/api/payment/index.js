@@ -1,13 +1,11 @@
 const express = require('express')
-const secp256k1 = require('secp256k1')
 
 const networks = require('../../networks')
-const { decodeTx, prepareTransactionToSign } = require('../../utils/tx')
 const { createPayToHash, pubkeyToAddress } = require('../../utils/address')
-const { doubleHash } = require('../../utils/hash')
 const db = require('../../database')
 const CLTVScript = require('../../paymentchannel/cltv')
-const { InvalidSignatureError } = require('./error')
+const { verifyPaymentChannelTx } = require('../../paymentchannel/util')
+const { InvalidSignatureError } = require('../error')
 
 const PaymentMessage = require('./message')
 const logger = require('../../logging')
@@ -35,18 +33,8 @@ router.post('/', async (req, res) => {
   /*
     Verify signature
   */
-  const tx = decodeTx(paymentMessage.transaction)
-  // Check transaction signature once we have the previous tx from database
-  tx.hashCodeType = 1
-  // payment channel always have 1 txin
-  tx.txIns[0].signature = Buffer.from(pc.utxo.txout.scriptPubKey.hex, 'hex')
-
-  const rawUnsignedTransaction = prepareTransactionToSign(tx, 0)
-  const rawTransactionHash = doubleHash(rawUnsignedTransaction)
-
   const cltv = CLTVScript.fromHex(pc.redeemScript)
-  const sig = secp256k1.signatureImport(paymentMessage.signature)
-  const ok = secp256k1.ecdsaVerify(sig, rawTransactionHash, Buffer.from(cltv.payerPubkey, 'hex'))
+  const ok = verifyPaymentChannelTx(paymentMessage.transaction, paymentMessage.signature, Buffer.from(cltv.payerPubkey, 'hex'))
 
   if (!ok) {
     throw new InvalidSignatureError()

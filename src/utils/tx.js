@@ -1,4 +1,3 @@
-const secp256k1 = require('secp256k1')
 const CompactSize = require('./compactSize')
 const { doubleHash } = require('./hash')
 
@@ -151,12 +150,6 @@ function prepareTransactionToSign (transaction, vint) {
   return buffer
 }
 
-function sign (message, privatekey) {
-  let signature = secp256k1.ecdsaSign(message, privatekey)
-  signature = secp256k1.signatureExport(signature.signature)
-  return Buffer.from(signature)
-}
-
 function encodeRawTransaction (transaction) {
   const txInCount = CompactSize.fromSize(transaction.txInCount)
   const txOutCount = CompactSize.fromSize(transaction.txOutCount)
@@ -224,4 +217,4 @@ function encodeRawTransaction (transaction) {
   return buffer
 }
 
-module.exports = { decodeTx, prepareTransactionToSign, sign, encodeRawTransaction }
+module.exports = { decodeTx, prepareTransactionToSign, encodeRawTransaction }
