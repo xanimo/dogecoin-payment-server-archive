@@ -11,7 +11,6 @@ class AnnounceMessage {
       Construct an AnnounceMessage from object
   */
   static fromObject (args) {
-    console.log(args)
     if (!Object.prototype.hasOwnProperty.call(args, 'redeemScript')) {
       throw new MissingFieldError('redeemScript')
     }

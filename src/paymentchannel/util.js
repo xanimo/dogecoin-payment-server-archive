@@ -45,7 +45,6 @@ function signPaymentChannelTx (rawtx, payerSignature, redeemScript, privkey) {
 
 function verifyPaymentChannelTx (rawtx, signature, redeemScript, pubkey) {
   const tx = decodeTx(rawtx)
-  console.log(redeemScript)
 
   // Probably not redeem script but p2sh
   tx.txIns[0].signature = redeemScript
