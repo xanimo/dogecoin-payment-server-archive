@@ -1,7 +1,7 @@
 const request = require('supertest')
 const app = require('../src/app')
 
-console.log(process.env.RPC_USER)
+console.log(process.env.PRIVATE_KEY.length)
 
 describe('GET /api/v1/pubkey/new', () => {
   it('responds with json', function (done) {
