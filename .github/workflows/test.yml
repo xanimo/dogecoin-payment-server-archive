@@ -27,4 +27,6 @@ jobs:
     - name: Run Standard
       run: npm run lint
     - name: Run tests
-      run: npm test
+      run: |
+        mkdir data
+        npm test
