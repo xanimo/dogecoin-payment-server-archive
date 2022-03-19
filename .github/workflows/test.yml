@@ -1,6 +1,8 @@
 name: Run tests
 
 on:
+  push:
+    branches: [lola/close-api]
   pull_request:
     branches: [ main ]
 
@@ -13,7 +15,7 @@ jobs:
       RPC_USER: satoshi
       RPC_PASSWORD: amiens
       RPC_URL: 127.0.0.1
-      RPC_PORT: 44555
+      RPC_PORT: 18443
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
     steps:
     - name: Checkout Repo 
