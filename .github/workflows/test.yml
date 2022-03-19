@@ -29,4 +29,5 @@ jobs:
     - name: Run tests
       run: |
         mkdir data
+        ls
         npm test
