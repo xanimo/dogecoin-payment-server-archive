@@ -9,7 +9,7 @@ describe('GET /api/v1/pubkey/new', () => {
       .get('/api/v1/pubkey/new')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200, done)
+      .expect(200, done())
   })
 })
 
@@ -24,7 +24,7 @@ describe('POST /api/v1/announce', () => {
       .post('/api/v1/announce')
       .send(data)
       .set('Accept', 'application/json')
-      .expect(200, done)
+      .expect(200, done())
   })
 
   it('missing `redeemScript` field', function (done) {
@@ -35,7 +35,7 @@ describe('POST /api/v1/announce', () => {
       .expect(400, {
         message: 'Missing redeemScript field.',
         id: 'MissingFieldError'
-      }, done)
+      }, done())
   })
 
   it('our key in CLTV clause', function (done) {
@@ -51,6 +51,6 @@ describe('POST /api/v1/announce', () => {
       .expect(400, {
         message: 'Payee public key must be part of the multisig clause.',
         id: 'OurKeyNotInMultisigError'
-      }, done)
+      }, done())
   })
 })
