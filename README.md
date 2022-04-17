@@ -1,25 +1,2 @@
-# dogecoin-spv-node-middleware
-
-## Setup
-
-```
-npm install
-```
-
-## Lint
-
-```
-npm run lint
-```
-
-## Test
-
-```
-npm run test
-```
-
-## Development
-
-```
-npm run dev
-```
+## project has moved:
+[dogecoin-payment-server](https://github.com/ShibeTechnology/dogecoin-payment-server)
